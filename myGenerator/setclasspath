@@ -1,1 +1,3 @@
-export CLASSPATH=/home2/marty/src/qrcodeGen/zxing-1.6/javase/javase.jar:/home2/marty/src/qrcodeGen/zxing-1.6/core/core.jar:/home2/marty/src/qrcodeGen/myGenerator/opencsv-2.2/deploy/opencsv-2.2.jar:.
+#source this file
+#ex . setclasspath
+export CLASSPATH=$HOME/src/qrcodeGen/zxing-1.6/javase/javase.jar:$HOME/src/qrcodeGen/zxing-1.6/core/core.jar:$HOME/src/qrcodeGen/myGenerator/opencsv-2.2/deploy/opencsv-2.2.jar:.
