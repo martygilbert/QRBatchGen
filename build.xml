@@ -9,12 +9,6 @@
     <property name="lib" location="lib"/>
     <property name="output" location="output"/>
 
-    <!-- Set the classpath -->
-    <classpath>
-        <fileset dir="${lib}">
-            <include name="**/*.jar"/>
-        </fileset>
-    </classpath>
 
     <target name="init">
         <!-- Create the time stamp -->
@@ -24,8 +18,15 @@
     </target>
 
     <target name="compile" depends="init" description="compile the source " >
+        <!-- Set the classpath -->
         <!-- Compile the java code from ${src} into ${output} -->
-        <javac srcdir="${src}" destdir="${output}"/>
+        <javac srcdir="${src}" destdir="${output}">
+            <classpath>
+                <fileset dir="${lib}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+        </javac>
     </target>
 
     <!--
