@@ -1,0 +1,44 @@
+<project name="QRCodeBatchGen" default="compile" basedir=".">
+
+	<description>
+        Simple build file for QRCodeBatchGen project
+	</description>
+
+    <!-- set global properties for this build -->
+    <property name="src" location="src"/>
+    <property name="lib" location="lib"/>
+    <property name="output" location="output"/>
+
+    <!-- Set the classpath -->
+    <classpath>
+        <fileset dir="${lib}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </classpath>
+
+    <target name="init">
+        <!-- Create the time stamp -->
+        <tstamp/>
+        <!-- Create the build directory structure used by compile -->
+        <mkdir dir="${output}"/>
+    </target>
+
+    <target name="compile" depends="init" description="compile the source " >
+        <!-- Compile the java code from ${src} into ${output} -->
+        <javac srcdir="${src}" destdir="${output}"/>
+    </target>
+
+    <!--
+    <target name="dist" depends="compile" description="generate the distribution" >
+        <mkdir dir="${dist}/lib"/>
+
+        <jar jarfile="${dist}/lib/MyProject-${DSTAMP}.jar" basedir="${output}"/>
+    </target>
+    -->
+
+    <target name="clean" description="clean up" >
+        <!-- Delete the ${output} and ${dist} directory trees -->
+        <delete dir="${output}"/>
+        <!--<delete dir="${dist}"/>-->
+    </target>
+</project>
