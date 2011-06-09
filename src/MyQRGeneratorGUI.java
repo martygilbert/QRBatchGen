@@ -8,21 +8,26 @@ import java.io.*;
 
 public class MyQRGeneratorGUI {
 
-    JTextField outputDirText;
-    JTextField inputFileText;
+    private JTextField outputDirText;
+    private JTextField inputFileText;
 
-    JButton convert;
-    JButton browseOutputButton;
-    JButton browseCSVButton;
-    JButton submitButton;
-    JButton closeButton;
+    private JButton convert;
+    private JButton browseOutputButton;
+    private JButton browseCSVButton;
+    private JButton submitButton;
+    private JButton closeButton;
 
-    JFrame frame;
+    private JFrame frame;
 
-    JRadioButton contactsButton;
-    JRadioButton calendarButton;
-    JRadioButton textButton;
-    JRadioButton urlButton;
+    private JRadioButton contactsButton;
+    private JRadioButton calendarButton;
+    private JRadioButton textButton;
+    private JRadioButton urlButton;
+
+    private File outputDir = null;
+    private File inputFile = null;
+
+    private String method = "";
 
 
 
@@ -70,17 +75,26 @@ public class MyQRGeneratorGUI {
         optionsPanel.setBorder(BorderFactory.createTitledBorder("Target Type"));
 
         contactsButton = new JRadioButton("Contacts");
+        //contactsButton.setSelected(true);
+        contactsButton.setActionCommand("contacts");
+        contactsButton.addActionListener(new RadioButtonListener());
         optionsPanel.add(contactsButton);
 
         calendarButton = new JRadioButton("Calendar");
+        calendarButton.setActionCommand("calendar");
+        calendarButton.addActionListener(new RadioButtonListener());
         optionsPanel.add(calendarButton);
 
         textButton = new JRadioButton("Text");
         textButton.setEnabled(false);
+        textButton.setActionCommand("text");
+        textButton.addActionListener(new RadioButtonListener());
         optionsPanel.add(textButton);
 
         urlButton = new JRadioButton("URL");
         urlButton.setEnabled(false);
+        urlButton.setActionCommand("url");
+        urlButton.addActionListener(new RadioButtonListener());
         optionsPanel.add(urlButton);
 
 
@@ -121,7 +135,6 @@ public class MyQRGeneratorGUI {
 
     }
 
-    private File outputDir = null;
     private void selectOutputDir(){
         JFileChooser c = new JFileChooser();
         c.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -133,7 +146,6 @@ public class MyQRGeneratorGUI {
 
     }
 
-    private File inputFile = null;
     private void selectCSVFile(){
         JFileChooser c = new JFileChooser();
         int retVal = c.showOpenDialog(frame);
@@ -158,12 +170,44 @@ public class MyQRGeneratorGUI {
 
     class SubmitButtonListener implements ActionListener{
         public void actionPerformed(ActionEvent e){
+
+            if(outputDir == null || inputFile == null || method == null){
+                JOptionPane.showMessageDialog(frame, 
+                    "Both input file and output location are required fields", 
+                    "Missing Required Data", 
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            //fields are not null -- do it!
+            MyQRGenerator qr = new MyQRGenerator();
+            String error = qr.create(method,inputFile,outputDir);
+
+            //failed w/error code
+            if(error != null){
+                JOptionPane.showMessageDialog(frame, 
+                    error, "Error Processing Data", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            JOptionPane.showMessageDialog(frame, 
+                "Done!", "Process Completed", 
+                JOptionPane.INFORMATION_MESSAGE);
+
         }
     }
 
     class CloseButtonListener implements ActionListener{
         public void actionPerformed(ActionEvent e){
             System.exit(0);
+        }
+    }
+
+    class RadioButtonListener implements ActionListener{
+        public void actionPerformed(ActionEvent e){
+            method = e.getActionCommand();            
+            System.err.println(method);
         }
     }
 }

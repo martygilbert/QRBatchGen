@@ -12,7 +12,7 @@ import au.com.bytecode.opencsv.*;
 
 
 /*
-* CSV file format for contacts:
+* CSV file format for contacts -- no headers needed!
 * firstname,lastname,institution,email,worknum
 * firstname,lastname,institution,email,worknum
 * firstname,lastname,institution,email,worknum
@@ -21,56 +21,72 @@ import au.com.bytecode.opencsv.*;
 
 public class MyQRGenerator {
 
+    public String create(String method, File inputFile, File outputDir){
 
-    public static void main(String args[]){
+        String resultString = null;
 
-        if(args.length != 2){
-            System.out.println("Usage: java MyQRGenerator <CSVfile> <contacts|calendar>");
-            System.exit(1);
-        }
-
-
-        File f = new File(args[0]);
-        if(!f.exists()) {
-            System.out.println("CSV file does not exist");
-            System.exit(1);
+        if(!inputFile.exists()) {
+            return "CSV file does not exist";
         }
 
         MyQRGenerator myqr = new MyQRGenerator();
 
-        if(args[1].equals("contacts")){
-            myqr.parseContactFile(f);
-        } else if (args[1].equals("calendar")){
-            //do something else
-            System.out.println("parsing calendar objects");
-            myqr.parseCalendarFile(f);
+        if(method.equals("contacts")){
+            ArrayList<Contact> contacts = myqr.parseContactFile(inputFile);
+            if(contacts == null){
+               resultString = "Error parsing calendar CSV file";
+            } else {
+                boolean success = writeContacts(contacts, outputDir);
+                if(!success) resultString = "Error writing contacts QR codes"; 
+            }
+        } else if (method.equals("calendar")){
+            //System.out.println("parsing calendar objects");
+            ArrayList<CalendarEvent> events = myqr.parseCalendarFile(inputFile);
+            if(events == null){
+               resultString = "Error parsing calendar CSV file";
+            } else {
+                boolean success = writeCalendarEvents(events, outputDir);
+                if(!success) resultString = "Error writing calendar QR codes"; 
+            }
+        } else {
+            resultString = "Method not currently supported";
         }
-        
+        return resultString;
     }
 
     /**
     * @param content String to be stored in the QR Code
     * @param filename Name of file (minus the .png extension -- this will be added)
     */
-    private void writeQRCode(String content, String filename){
+    private void writeQRCode(String content, String filename, String outputDirPath) throws Exception{
         QRCode qr = new QRCode();
 
-        try{
-            QRCodeWriter qrw = new QRCodeWriter();
-            BitMatrix b = qrw.encode(content, BarcodeFormat.QR_CODE, 300,300);
+        QRCodeWriter qrw = new QRCodeWriter();
+        BitMatrix b = qrw.encode(content, BarcodeFormat.QR_CODE, 300,300);
 
-            //MatrixToImageWriter.writeToFile(b, "QR_CODE", new File("/tmp/testContact.png"));
-            java.awt.image.BufferedImage img = MatrixToImageWriter.toBufferedImage(b);
-            javax.imageio.ImageIO.write(img, "png", new File(filename+".png"));
-
-        } catch (Exception e){
-            e.printStackTrace();
-        }
+        java.awt.image.BufferedImage img = MatrixToImageWriter.toBufferedImage(b);
+        javax.imageio.ImageIO.write(img, "png", new File(outputDirPath + File.separator+ filename + ".png"));
     }
 
-    public void parseCalendarFile(File file){
+    public boolean writeCalendarEvents(ArrayList<CalendarEvent> events, File outputDir){
+        boolean success = true;
+        for(CalendarEvent c : events){
+            try{
+                writeQRCode(c.toString(),
+                    ((c.summary.replaceAll("\\s","")).replaceAll("'","")).substring(0,15),
+                    outputDir.getPath());
+             } catch (Exception e){
+                success = false;
+                //e.printStackTrace();
+                //System.out.println(c.toString());
+             }
+        }
+        return success;
+    }
+
+    public ArrayList<CalendarEvent> parseCalendarFile(File file){
         /**
-        * CSV file format
+        * CSV file format -- no headers needed!
         * SUMMARY,DTSTART,DTEND,LOCATION,DESCRIPTION
         * SUMMARY,DTSTART,DTEND,LOCATION,DESCRIPTION
         * SUMMARY,DTSTART,DTEND,LOCATION,DESCRIPTION
@@ -105,34 +121,39 @@ public class MyQRGenerator {
                 events.add(c);
             }
 
+        /**
         } catch(FileNotFoundException fnfe){
             System.err.println(file + " cannot be found.");
         } catch (IOException ioe){
             ioe.printStackTrace();
+        **/
         } catch (Exception e){
-            e.printStackTrace();
+            events = null;
         } finally {
             try{
             br.close();
             } catch (Exception e){ e.printStackTrace();}
         }
+        return events;
+    }
 
-        for(CalendarEvent c : events){
+    public boolean writeContacts(ArrayList<Contact> contacts, File outputDir){
+        boolean success = true;
+        for(Contact c : contacts){
             try{
-                writeQRCode(c.toString(),((c.summary.replaceAll("\\s","")).replaceAll("'","")).substring(0,15));
+                writeQRCode(c.toString(), 
+                    c.lastName+"_"+c.firstName,
+                    outputDir.getPath());
             } catch (Exception e){
-                e.printStackTrace();
-                System.out.println(c.toString());
+                success = false;
             }
         }
 
-        
-
-
-
+        return success;
     }
 
-    public void parseContactFile(File file){
+
+    public ArrayList<Contact> parseContactFile(File file){
         /**
         * CSV file format:
         * firstname,lastname,institution,email,worknum
@@ -151,15 +172,15 @@ public class MyQRGenerator {
 
             CSVParser parser = new CSVParser();
             
-            
             while ( (line = br.readLine())!=null){
                 String[] tokens = parser.parseLine(line);
+
+
                 Contact c = new Contact();
                 c.firstName = tokens[0];
                 c.lastName = tokens[1];
                 c.institution = tokens[2];
                 c.email = tokens[3];
-                //c.url = tokens[0];
                 c.workNum= tokens[4];
                 /*
                 c.address1= tokens[5];
@@ -171,26 +192,15 @@ public class MyQRGenerator {
                 contacts.add(c);
             }
 
-
-
-
-        } catch(FileNotFoundException fnfe){
-            System.err.println(file + " cannot be found.");
-        } catch (IOException ioe){
-            ioe.printStackTrace();
         } catch (Exception e){
-            e.printStackTrace();
+            contacts = null;
         } finally {
             try{
             br.close();
             } catch (Exception e){}
         }
 
-        for(Contact c : contacts){
-            writeQRCode(c.toString(), c.lastName+"_"+c.firstName);
-        }
-
-
+        return contacts;
     }
 
     class Contact{
