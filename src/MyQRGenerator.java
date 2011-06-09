@@ -21,7 +21,18 @@ import au.com.bytecode.opencsv.*;
 
 public class MyQRGenerator {
 
+    private int size = 300;
+
+    public MyQRGenerator(){
+
+    }
+
+    public MyQRGenerator(int imgSize){
+        size = imgSize;
+    }
+
     public String create(String method, File inputFile, File outputDir){
+
 
         String resultString = null;
 
@@ -62,7 +73,7 @@ public class MyQRGenerator {
         QRCode qr = new QRCode();
 
         QRCodeWriter qrw = new QRCodeWriter();
-        BitMatrix b = qrw.encode(content, BarcodeFormat.QR_CODE, 300,300);
+        BitMatrix b = qrw.encode(content, BarcodeFormat.QR_CODE, size, size);
 
         java.awt.image.BufferedImage img = MatrixToImageWriter.toBufferedImage(b);
         javax.imageio.ImageIO.write(img, "png", new File(outputDirPath + File.separator+ filename + ".png"));
@@ -108,16 +119,22 @@ public class MyQRGenerator {
             while ( (line = br.readLine())!=null){
 
                 //String[] tokens = line.split(","); 
-                String[] tokens = parser.parseLine(line);
                 CalendarEvent c = new CalendarEvent();
+                try{
+                    String[] tokens = parser.parseLine(line);
 
-                c.summary = tokens[0];
-                c.dateStart = tokens[1];
-                c.dateEnd = tokens[2];
-                c.location = tokens[3];
-                //c.url = tokens[0];
-                c.description= tokens[4];
-
+                    c.summary = tokens[0];
+                    c.dateStart = tokens[1];
+                    c.dateEnd = tokens[2];
+                    c.location = tokens[3];
+                    //c.url = tokens[0];
+                    c.description= tokens[4];
+                } catch (Exception e){
+                    System.err.println("Error processing line: " + line);
+                    //don't add -- go to next line.
+                    continue;
+                }
+    
                 events.add(c);
             }
 

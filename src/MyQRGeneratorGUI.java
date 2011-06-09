@@ -27,6 +27,11 @@ public class MyQRGeneratorGUI {
     private File outputDir = null;
     private File inputFile = null;
 
+    private JMenuBar menuBar;
+    private JMenu menu;
+    private JMenuItem menuItem;
+
+
     private String method = "";
 
 
@@ -111,10 +116,16 @@ public class MyQRGeneratorGUI {
 
         //csvPanel.setMaximumSize(new Dimension(400,75));
         //outputPanel.setMaximumSize(new Dimension(,75));
-        inputPanel.setAlignmentX(JPanel.RIGHT_ALIGNMENT);
+        //inputPanel.setAlignmentX(JPanel.RIGHT_ALIGNMENT);
+
         inputPanel.add(csvPanel,JPanel.RIGHT_ALIGNMENT);
         inputPanel.add(outputPanel,JPanel.RIGHT_ALIGNMENT);
-        inputPanel.add(optionsPanel);
+
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel,BoxLayout.Y_AXIS));
+
+        topPanel.add(inputPanel);
+        topPanel.add(optionsPanel);
 
         JPanel buttonPanel = new JPanel();
         
@@ -126,12 +137,44 @@ public class MyQRGeneratorGUI {
         closeButton.addActionListener(new CloseButtonListener());
         buttonPanel.add(closeButton);
 
-        frame.getContentPane().add(inputPanel, BorderLayout.NORTH);
+        setupMenu();
+        frame.setJMenuBar(menuBar);
+
+        frame.getContentPane().add(topPanel, BorderLayout.NORTH);
         frame.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 
         frame.pack();
-        frame.setSize(495,245);
+        frame.setSize(495,255);
         frame.setVisible(true);
+
+    }
+
+    private void setupMenu(){
+        menuBar = new JMenuBar();
+
+        //File menu
+        menu = new JMenu("File");
+        menu.setMnemonic(KeyEvent.VK_F);
+        menuBar.add(menu);
+
+        menuItem = new JMenuItem("Exit", KeyEvent.VK_X);
+        menuItem.addActionListener(new CloseButtonListener());
+        menu.add(menuItem);
+
+        JMenu helpMenu = new JMenu("Help");
+        helpMenu.setMnemonic(KeyEvent.VK_H);
+        menuBar.add(helpMenu);
+
+        JMenuItem formats = new JMenuItem("Input File Specifications");
+        formats.setMnemonic(KeyEvent.VK_S);
+        formats.addActionListener(new ShowFormatSpecsListener());
+        helpMenu.add(formats);
+
+        JMenuItem about = new JMenuItem("About QRCode Generator", KeyEvent.VK_A);
+        about.addActionListener(new AboutProgramListener());
+        helpMenu.add(about);
+
+
 
     }
 
@@ -207,7 +250,41 @@ public class MyQRGeneratorGUI {
     class RadioButtonListener implements ActionListener{
         public void actionPerformed(ActionEvent e){
             method = e.getActionCommand();            
-            System.err.println(method);
+            //System.err.println(method);
+        }
+    }
+
+    class AboutProgramListener implements ActionListener{
+        public void actionPerformed(ActionEvent e){
+            //show about box
+        }
+    }
+    class ShowFormatSpecsListener implements ActionListener{
+        public void actionPerformed(ActionEvent e){
+
+            JPanel panel = new JPanel();
+     
+            // Generate a row of buttons..
+            //for (int i=0; i<5; i++) {
+                //panel.add(new JButton("Button " + i));
+            //}
+
+            JPanel holder = new JPanel(new BorderLayout());
+            //holder.add(panel, BorderLayout.NORTH);
+            
+            //HTMLDocument infoDoc = new HTMLDocument(Constants.FILE_FORMAT_SPECS);
+
+
+            JScrollPane scroll = new JScrollPane(new JEditorPane("text/html",Constants.FILE_FORMAT_SPECS));
+            scroll.setPreferredSize(new Dimension(450, 250));
+
+            holder.add(scroll, BorderLayout.CENTER);
+     
+            // This is where the dialog is actually displayed..
+            JOptionPane.showMessageDialog(frame,
+                holder,
+                "JOptionPane dialog",
+                JOptionPane.INFORMATION_MESSAGE);
         }
     }
 }
