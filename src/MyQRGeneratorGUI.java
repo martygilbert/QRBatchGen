@@ -91,7 +91,7 @@ public class MyQRGeneratorGUI {
         optionsPanel.add(calendarButton);
 
         textButton = new JRadioButton("Text");
-        textButton.setEnabled(false);
+        textButton.setEnabled(true);
         textButton.setActionCommand("text");
         textButton.addActionListener(new RadioButtonListener());
         optionsPanel.add(textButton);
@@ -182,7 +182,7 @@ public class MyQRGeneratorGUI {
         JFileChooser c = new JFileChooser();
         c.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int retVal = c.showOpenDialog(frame);
-        if(retVal == JFileChooser.APPROVE_OPTION){
+        if (retVal == JFileChooser.APPROVE_OPTION){
             outputDir = c.getSelectedFile(); 
             outputDirText.setText(outputDir.getPath());
         }
@@ -192,7 +192,7 @@ public class MyQRGeneratorGUI {
     private void selectCSVFile(){
         JFileChooser c = new JFileChooser();
         int retVal = c.showOpenDialog(frame);
-        if(retVal == JFileChooser.APPROVE_OPTION){
+        if (retVal == JFileChooser.APPROVE_OPTION){
             inputFile = c.getSelectedFile();
             inputFileText.setText(inputFile.getPath());
         }
@@ -214,7 +214,7 @@ public class MyQRGeneratorGUI {
     class SubmitButtonListener implements ActionListener{
         public void actionPerformed(ActionEvent e){
 
-            if(outputDir == null || inputFile == null || method == null){
+            if (outputDir == null || inputFile == null || method == null){
                 JOptionPane.showMessageDialog(frame, 
                     "Both input file and output location are required fields", 
                     "Missing Required Data", 
@@ -224,10 +224,10 @@ public class MyQRGeneratorGUI {
 
             //fields are not null -- do it!
             MyQRGenerator qr = new MyQRGenerator();
-            String error = qr.create(method,inputFile,outputDir);
+            String error = qr.create(method, inputFile, outputDir);
 
             //failed w/error code
-            if(error != null){
+            if (error != null){
                 JOptionPane.showMessageDialog(frame, 
                     error, "Error Processing Data", 
                     JOptionPane.ERROR_MESSAGE);

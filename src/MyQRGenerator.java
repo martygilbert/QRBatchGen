@@ -11,13 +11,6 @@ import java.util.*;
 import au.com.bytecode.opencsv.*;
 
 
-/*
-* CSV file format for contacts -- no headers needed!
-* firstname,lastname,institution,email,worknum
-* firstname,lastname,institution,email,worknum
-* firstname,lastname,institution,email,worknum
-*/
-
 
 public class MyQRGenerator {
 
@@ -59,6 +52,16 @@ public class MyQRGenerator {
                 boolean success = writeCalendarEvents(events, outputDir);
                 if(!success) resultString = "Error writing calendar QR codes"; 
             }
+        } else if (method.equals("text")){
+            System.out.println("parsing txt");
+            ArrayList<String> codes = myqr.parseTxtFile(inputFile);
+            System.out.println(codes.size());
+            if(codes == null){
+               resultString = "Error parsing txt CSV file";
+            } else {
+                boolean success = writeTxtItems(codes, outputDir);
+                if(!success) resultString = "Error writing txt QR codes"; 
+            }
         } else {
             resultString = "Method not currently supported";
         }
@@ -79,6 +82,23 @@ public class MyQRGenerator {
         javax.imageio.ImageIO.write(img, "png", new File(outputDirPath + File.separator+ filename + ".png"));
     }
 
+    public boolean writeTxtItems(ArrayList<String> codes, File outputDir){
+        boolean success = true;
+        for(String s : codes){
+            try{
+                int maxSize = 15;
+                if (s.length() < maxSize) maxSize = s.length() - 1;
+                writeQRCode(s,
+                    ((s.replaceAll("\\s", "")).replaceAll("'", "")).substring(0, maxSize),
+                    outputDir.getPath());
+             } catch (Exception e){
+                e.printStackTrace();
+                success = false;
+             }
+        }
+        return success;
+    }
+
     public boolean writeCalendarEvents(ArrayList<CalendarEvent> events, File outputDir){
         boolean success = true;
         for(CalendarEvent c : events){
@@ -93,6 +113,38 @@ public class MyQRGenerator {
              }
         }
         return success;
+    }
+    public ArrayList<String> parseTxtFile(File file){
+        /**
+        * CSV file format -- no headers needed!
+        * txt
+        * txt
+        * etc
+        *
+        */
+
+        FileReader fr = null;
+        BufferedReader br = null;
+        ArrayList<String> codes = new ArrayList<String>();
+
+        try{
+            fr = new FileReader(file);
+            br = new BufferedReader(fr);
+            String line = null;
+            CSVParser parser = new CSVParser();
+            
+            while ( (line = br.readLine()) != null){
+                if (line != null && line.length() > 0) 
+                    codes.add(line);
+            }
+        } catch (Exception e){
+            codes = null;
+        } finally {
+            try{
+            br.close();
+            } catch (Exception e){ e.printStackTrace();}
+        }
+        return codes;
     }
 
     public ArrayList<CalendarEvent> parseCalendarFile(File file){
